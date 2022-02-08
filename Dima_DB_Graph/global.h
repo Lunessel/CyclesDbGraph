@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <mutex>
+#include <map>
 #include "Pair.h"
 #include "AdditionalFunctions.h"
 
@@ -17,4 +18,5 @@ extern std::vector<std::string> reversedlistofvertexes;
 extern std::vector<std::vector<long int>> cycles;
 extern const std::string MainToken;
 extern std::mutex mtx;
+extern std::map<std::string, std::string> feeList;
 #endif

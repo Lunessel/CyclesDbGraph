@@ -68,3 +68,40 @@ bool IsCycleUnique(const std::vector<long int>& tempcycle)
 	}
 	return false;
 }
+
+std::vector< std::vector< std::pair<std::string, std::string> > > AllPossibleComb(
+	std::vector< std::vector< std::pair<std::string, std::string> > >& pairs)
+{
+	std::vector< std::vector< std::pair<std::string, std::string> > > res;
+	std::vector< std::vector< std::pair<std::string, std::string> > > x;
+
+	for (auto i : pairs[0])
+	{
+		std::vector< std::pair<std::string, std::string> > temp;
+		temp.push_back(i);
+		res.push_back(temp);
+	}
+
+	for (int i = 1; i < pairs.size(); ++i)
+	{
+		long int j = 0;
+		x = res;
+		long int k = res.size();
+
+		for (int bib = 0; bib < pairs[i].size() - 1; ++bib)
+		{
+			for (auto t : x)
+			{
+				res.push_back(t);
+			}
+		}
+
+		while (j < res.size())
+		{
+			res[j].push_back(pairs[i][j / k]);
+			++j;
+		}
+	}
+
+	return res;
+}

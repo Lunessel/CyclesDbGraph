@@ -7,5 +7,6 @@ std::vector<std::vector<long int>> graph;
 std::map<std::string, long int> listofvertexes;
 std::vector<std::string> reversedlistofvertexes;
 std::vector<std::vector<long int>> cycles;
-const std::string MainToken = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
+const std::string MainToken = "B"; //"0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
 std::mutex mtx;
+std::map<std::string, std::string> feeList;

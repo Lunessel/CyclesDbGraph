@@ -1,0 +1,8 @@
+AlitaSwap
+AmpleSwap
+ApeSwap
+BabySwap
+BenSwap
+JetSwap
+PancakeSwap
+WaultSwap

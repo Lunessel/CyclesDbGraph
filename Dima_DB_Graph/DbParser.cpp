@@ -5,7 +5,7 @@
 #include "DbParser.h"
 
 
-int DbParser::selectData(const char* s, std::vector<std::string> names)
+int selectData(const char* s, std::vector<std::string> names)
 {
 	sqlite3* DB;
 	char* messageError;
@@ -14,7 +14,7 @@ int DbParser::selectData(const char* s, std::vector<std::string> names)
 
 	for (std::string name : names)
 	{
-		sql += "SELECT pair,token0,token1 FROM \"" + name + "\" LIMIT 100000;"; //LIMIT 5000
+		sql += "SELECT pair,token0,token1 FROM \"" + name + "\";"; //LIMIT 5000
 	}
 
 	int exit = sqlite3_open(s, &DB);
@@ -34,7 +34,7 @@ int DbParser::selectData(const char* s, std::vector<std::string> names)
 
 // retrieve contents of database used by selectData()
 /* argc: holds the number of results, argv: holds each value in array, azColName: holds each column returned in array, */
-int DbParser::callback(void* NotUsed, int argc, char** argv, char** azColName)
+int callback(void* NotUsed, int argc, char** argv, char** azColName)
 {
 	basegraph[argv[1]].push_back(Pair(argv[0], argv[1], argv[2]));
 	basegraph[argv[2]].push_back(Pair(argv[0], argv[2], argv[1]));

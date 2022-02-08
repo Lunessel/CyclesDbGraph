@@ -2,9 +2,9 @@
 #include "AdditionalFunctions.h"
 #include "DfsSearcher.h"
 
-void DfsSearcher::dfs_cycle(long long int u, long long int p, std::vector<long long int>& color,
+void dfs_cycle(long int u, long int p, std::vector<long int>& color,
 
-	std::vector<long long int>& par, long long int intputvertex)
+	std::vector<long int>& par, long int intputvertex)
 {
 	int inftemp = 0;
 	bool isnotfirstvertexFlag = true;
@@ -21,8 +21,8 @@ void DfsSearcher::dfs_cycle(long long int u, long long int p, std::vector<long l
 	// seen vertex, but was not completely visited -> cycle detected.
 	// backtrack based on parents to find the complete cycle.
 	if (color[u] > 0) {
-		long long int cur = p;
-		std::vector<long long int> tempcycle;
+		long int cur = p;
+		std::vector<long int> tempcycle;
 
 		tempcycle.push_back(cur);
 
@@ -44,16 +44,15 @@ void DfsSearcher::dfs_cycle(long long int u, long long int p, std::vector<long l
 		}
 		if (flag)
 		{
-			long long int length = tempcycle.size();
+			long int length = tempcycle.size();
 
 			for (auto& v : graph[tempcycle[0]])
 			{
 				if (v == tempcycle[length - 1])
 				{
-					if (AdditionalFunctions::IsCycleUnique(tempcycle))
+					if (IsCycleUnique(tempcycle) && tempcycle.size() > 2)
 					{
 						cycles.push_back(tempcycle);
-						//printCycles();
 					}
 
 					return;

@@ -9,6 +9,7 @@
 #include <string>
 #include <algorithm>
 #include <nlohmann/json.hpp>
+#include <mutex>
 #include "global.h"
 #include "AdditionalFunctions.h"
 #include "DbParser.h"
@@ -16,21 +17,14 @@
 #include "Pair.h"
 #include "JsonWriter.h"
 
-//static int selectData(const char* s, std::vector<std::string> names);
-//static int callback(void* NotUsed, int argc, char** argv, char** azColName);
-//bool IsCycleUnique(const std::vector<long long int>& tempcycle);
-//std::string ReplaceAll(std::string filename, const std::string& from, const std::string& to);
-//void printCycles();
-//void MakeOutputArray(nlohmann::json& MainJsonList);
-//class Pair;
-
 int main()
 {
-	dir = AdditionalFunctions::ReplaceAll("DB_Name.txt", "\\", "\\\\");
+	dir = ReplaceAll("DB_Name.txt", "\\", "\\\\");
 	NumberOfALLCycles = 0;
 	time_t timer1, timer2;
 	timer1 = time(0);
-	nlohmann::json MainJsonList = nlohmann::json::array({});
+	//nlohmann::json MainJsonList = nlohmann::json::array({});
+	std::vector<nlohmann::json> MainJsonList;
 	nlohmann::json json;
 	std::ifstream infile("DB_Tables_Name.txt");
 	std::string line;
@@ -41,11 +35,11 @@ int main()
 		result.push_back(line);
 	}
 
-	DbParser::selectData(dir.c_str(), result); //basegraph is given
+	selectData(dir.c_str(), result); //basegraph is given
 	//switch string to int in graph
 	std::map<std::string, std::vector<Pair> >::iterator basegraphiterator;
-	long long int vertexcounter = 0;
-	long long int GraphLength = basegraph.size();
+	long int vertexcounter = 0;
+	long int GraphLength = basegraph.size();
 	reversedlistofvertexes.resize(GraphLength);
 
 	for (basegraphiterator = basegraph.begin(); basegraphiterator != basegraph.end(); basegraphiterator++)
@@ -68,47 +62,75 @@ int main()
 
 	// arrays required to color the
 	// graph, store the parent of node
-	std::vector<long long int> color(GraphLength, 0);
-	std::vector<long long int> par(GraphLength, -1);
+	std::vector<long int> color(GraphLength, 0);
+	std::vector<long int> par(GraphLength, -1);
 
 	// call DFS to mark the cycles
-	long long int firstvertex = listofvertexes["0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd"]; //WBNB
+	long int firstvertex = listofvertexes[MainToken]; //WBNB
 	color[firstvertex] = graph[firstvertex].size() - 2;
 	//--color[firstpoint];
-	DfsSearcher::dfs_cycle(firstvertex, -1, color, par, firstvertex); //WBNB
+	dfs_cycle(firstvertex, -1, color, par, firstvertex); //WBNB
 
 	std::map<std::string, int>::iterator itColor;
-	long long int RealColorSize = 0;
-	for (long long int i = 0; i < color.size(); ++i)
+	long int RealColorSize = 0;
+	for (long int i = 0; i < color.size(); ++i)
 	{
 		if (color[i] != 0 || (color[i] == 0 && graph[i].size() == 1))
 			++RealColorSize;
 	}
 	while (graph.size() != RealColorSize)
 	{
-		for (long long int i = 0; i < color.size(); ++i)
+		for (long int i = 0; i < color.size(); ++i)
 		{
 			if (color[i] == 0 && i != firstvertex && graph[i].size() != 1)
 			{
 				color[i] = graph[i].size() - 2;
-				DfsSearcher::dfs_cycle(i, -1, color, par, i);
+				dfs_cycle(i, -1, color, par, i);
 				break;
 			}
 
 		}
 		RealColorSize = 0;
-		for (long long int i = 0; i < color.size(); ++i)
+		for (long int i = 0; i < color.size(); ++i)
 		{
 			if (color[i] != 0 || (color[i] == 0 && graph[i].size() == 1))
 				++RealColorSize;
 		}
 	}
 	//printCycles();
-	std::cout << cycles.size() << " was found\n";
+	long int cyclesize = cycles.size();
+	std::cout << cyclesize << " was found\n";
 
 
 
-	JsonWriter::MakeOutputArray(MainJsonList);
+
+	const int numberofthreads = 4;
+	long int threadstartindex = 0;
+	long int threadfinishindex = 0;
+	std::vector<std::thread> threads;
+	long int threadstep = cyclesize / numberofthreads;
+
+	for (int i = 0; i < numberofthreads; ++i)
+	{
+		threadstartindex = threadfinishindex;
+		if (i != (numberofthreads - 1))
+		{
+			threadfinishindex += threadstep;
+		}
+		else
+		{
+			threadfinishindex = cyclesize;
+		}
+		threads.push_back(std::thread(&MakeOutputArray, std::ref(MainJsonList), threadstartindex, threadfinishindex));
+		//myThreads[i] = std::thread(&MakeOutputArray, std::ref(MainJsonList), threadstartindex, threadfinishindex);
+	}
+	for (auto& th : threads) {
+		th.join();
+	}
+
+
+
+
 
 	//add array to json and write it to jsonfile
 	json["array"] = MainJsonList;

@@ -3,12 +3,8 @@
 
 #include <vector>
 
-class DfsSearcher
-{
-public:
-	static void dfs_cycle(long long int u, long long int p, std::vector<long long int>& color,
 
-		std::vector<long long int>& par, long long int intputvertex);
-};
+void dfs_cycle(long int u, long int p, std::vector<long int>& color,
 
+	std::vector<long int>& par, long int intputvertex);
 #endif

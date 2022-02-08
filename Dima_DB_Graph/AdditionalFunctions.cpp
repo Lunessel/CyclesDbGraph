@@ -4,7 +4,7 @@
 #include "global.h"
 
 
-std::string AdditionalFunctions::ReplaceAll(std::string filename, const std::string& from, const std::string& to)
+std::string ReplaceAll(std::string filename, const std::string& from, const std::string& to)
 {
 	std::ifstream name(filename);
 	std::string str;
@@ -18,21 +18,21 @@ std::string AdditionalFunctions::ReplaceAll(std::string filename, const std::str
 	return str;
 }
 
-void AdditionalFunctions::printCycles()
+void printCycles()
 {
 	// print all the vertex with same cycle
-	long long int cyclecounter = 0;
+	long int cyclecounter = 0;
 	for (auto& v : cycles)
 	{
 		std::cout << "Cycle Number " << cyclecounter << ": ";
-		for (long long int x : cycles[cyclecounter])
+		for (long int x : cycles[cyclecounter])
 			std::cout << x << " ";
 		std::cout << std::endl;
 		++cyclecounter;
 	}
 }
 
-bool AdditionalFunctions::IsCycleUnique(const std::vector<long long int>& tempcycle)
+bool IsCycleUnique(const std::vector<long int>& tempcycle)
 {
 	bool notexist = true;
 	for (auto& cyc : cycles)

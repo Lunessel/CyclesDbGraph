@@ -2,11 +2,7 @@
 #define JSONWRITER_H
 
 #include <nlohmann/json.hpp>
-class JsonWriter
-{
-public:
-	static void MakeOutputArray(nlohmann::json& MainJsonList);
 
-};
+void MakeOutputArray(std::vector<nlohmann::json>& MainJsonList, long int startindex, long int finishindex);
 
 #endif

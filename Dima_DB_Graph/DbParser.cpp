@@ -63,7 +63,7 @@ int FeeSelectData(const char* s, std::string name)
 		sqlite3_free(messageError);
 	}
 	else
-		std::cout << "Records selected Successfully!" << std::endl;
+		std::cout << "FEE Records selected Successfully!" << std::endl;
 
 	//sqlite3_close(DB);
 	return 0;
@@ -73,7 +73,6 @@ int FeeSelectData(const char* s, std::string name)
 /* argc: holds the number of results, argv: holds each value in array, azColName: holds each column returned in array, */
 int FeeCallback(void* NotUsed, int argc, char** argv, char** azColName)
 {
-	std::cout << "YES feeCallback worked!\n";
 	feeList[argv[0]] = argv[1];
 
 	return 0;

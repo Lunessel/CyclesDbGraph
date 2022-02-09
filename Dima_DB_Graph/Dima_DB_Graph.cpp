@@ -136,13 +136,11 @@ int main()
 				++RealColorSize;
 		}
 	}
-	printCycles();
+	//printCycles();
 	long int cyclesize = cycles.size();
 	std::cout << cyclesize << " was found\n";
 
-	WritingtoJsonFile(cyclesize, "B");
-	WritingtoJsonFile(cyclesize, "C");
-	WritingtoJsonFile(cyclesize, "D");
+	WritingtoJsonFile(cyclesize, "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c");
 
 
 	std::cout << "number of ALL cycles is: " << NumberOfALLCycles << "\n";

@@ -94,7 +94,7 @@ void MakeOutputArray(std::vector<nlohmann::json>& MainJsonList, long int startin
 			nlohmann::json j;
 
 			j["path"] = VJsonArray;
-			j["pairPaths"] = PairsJsonArray;
+			j["pairPath"] = PairsJsonArray;
 			j["exchanges"] = ExchangesJsonArray;
 			//MainJsonList.push_back(j);
 
@@ -118,7 +118,7 @@ void MakeOutputArray(std::vector<nlohmann::json>& MainJsonList, long int startin
 			//ReversePairsJsonArray = readypair;
 			nlohmann::json rj;
 			rj["path"] = ReverseVJsonArray;
-			rj["pairPaths"] = ReversePairsJsonArray;
+			rj["pairPath"] = ReversePairsJsonArray;
 			rj["exchanges"] = ExchangesJsonArray;
 			//MainJsonList.push_back(rj);
 			NumberOfALLCycles += 2;

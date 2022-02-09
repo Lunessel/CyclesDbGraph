@@ -31,7 +31,7 @@ void dfs_cycle(long int u, long int p, std::vector<long int>& color,
 		inftemp = 0;
 		bool flag = true;
 		while (cur != u) {
-			if (inftemp > 10)
+			if (inftemp > 6)
 			{
 				flag = false;
 				inftemp = 0;

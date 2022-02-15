@@ -31,7 +31,7 @@ void dfs_cycle(long int u, long int p, std::vector<long int>& color,
 		inftemp = 0;
 		bool flag = true;
 		while (cur != u) {
-			if (inftemp > 6)
+			if (inftemp > 3) // this 6 is length 8(abcdefgh) 
 			{
 				flag = false;
 				inftemp = 0;

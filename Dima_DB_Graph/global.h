@@ -18,5 +18,5 @@ extern std::vector<std::string> reversedlistofvertexes;
 extern std::vector<std::vector<long int>> cycles;
 extern const std::string MainToken;
 extern std::mutex mtx;
-extern std::map<std::string, std::string> feeList;
+extern std::map<std::string, int> feeList;
 #endif

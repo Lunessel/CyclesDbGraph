@@ -43,8 +43,14 @@ void MakeOutputArray(std::vector<nlohmann::json>& MainJsonList, long int startin
 		v.push_back(v[0]);
 
 		//find pairs for current cycle
-		std::vector< std::vector< std::pair<std::string, std::string> > > pairs;
-		pairs.resize(length);
+
+		std::vector< std::vector< std::pair<std::string, int> >> paex;
+		//std::vector< std::vector<std::string>> exchanges;
+		//std::pair< std::vector< std::vector<std::string>>, std::vector< std::vector<std::string>> > paex;
+		paex.resize(length);
+		//exchanges.resize(length);
+		/*pairs.resize(length);
+		exchanges.resize(length);*/
 		long int countpairs = 0;
 
 		for (long int i = 0; i < length; i++)
@@ -63,71 +69,59 @@ void MakeOutputArray(std::vector<nlohmann::json>& MainJsonList, long int startin
 			{
 				if (p.m_token1 == strfirst)
 				{
-					pairs[countpairs].push_back({ p.m_pair, p.m_fee });
+					paex[countpairs].push_back( { p.m_pair, feeList[p.m_fee] } );
 				}
 			}
 			++countpairs;
 
 		}
 
-		std::vector< std::vector< std::pair<std::string, std::string> > > preparedpairs = AllPossibleComb(pairs);
-		//write arrays to json
-		for (auto &readypair : preparedpairs)
+	//std::vector< std::vector< std::pair<std::string, std::string> > > preparedpairs = AllPossibleComb(pairs);
+	//write arrays to json
+		nlohmann::json VJsonArray = nlohmann::json::array({});
+		nlohmann::json PairsJsonArray = nlohmann::json::array({});
+		//nlohmann::json ExchangesJsonArray = nlohmann::json::array({});
+		for (auto vel : v)
 		{
-
-
-			nlohmann::json VJsonArray = nlohmann::json::array({});
-			nlohmann::json PairsJsonArray = nlohmann::json::array({});
-			nlohmann::json ExchangesJsonArray = nlohmann::json::array({});
-			//VJsonArray = v;
-			for (auto vel : v)
-			{
-				VJsonArray.push_back(reversedlistofvertexes[vel]);
-			}
-			for (auto pe : readypair)
-			{
-				PairsJsonArray.push_back(pe.first);
-				ExchangesJsonArray.push_back(feeList[pe.second]);
-			}
-			//PairsJsonArray = readypair;
-
-			nlohmann::json j;
-
-			j["path"] = VJsonArray;
-			j["pairPath"] = PairsJsonArray;
-			j["exchanges"] = ExchangesJsonArray;
-			//MainJsonList.push_back(j);
-
-			//write reverse arrays to json
-			nlohmann::json ReverseVJsonArray = nlohmann::json::array({});
-			nlohmann::json ReversePairsJsonArray = nlohmann::json::array({});
-			nlohmann::json ReverseExchangesJsonArray = nlohmann::json::array({});
-
-			std::reverse(v.begin(), v.end());
-			std::reverse(readypair.begin(), readypair.end());
-			//ReverseVJsonArray = v;
-			for (auto vel : v)
-			{
-				ReverseVJsonArray.push_back(reversedlistofvertexes[vel]);
-			}
-			for (auto pe : readypair)
-			{
-				ReversePairsJsonArray.push_back(pe.first);
-				ReverseExchangesJsonArray.push_back(feeList[pe.second]);
-			}
-			//ReversePairsJsonArray = readypair;
-			nlohmann::json rj;
-			rj["path"] = ReverseVJsonArray;
-			rj["pairPath"] = ReversePairsJsonArray;
-			rj["exchanges"] = ExchangesJsonArray;
-			//MainJsonList.push_back(rj);
-			NumberOfALLCycles += 2;
-
-			mtx.lock();
-			MainJsonList.push_back(j);
-			MainJsonList.push_back(rj);
-			mtx.unlock();
+			VJsonArray.push_back(reversedlistofvertexes[vel]);
 		}
+		PairsJsonArray = paex;
+		//ExchangesJsonArray = exchanges;
+
+		nlohmann::json j;
+
+		j["path"] = VJsonArray;
+		j["pairs"] = PairsJsonArray;
+		//j["exchanges"] = ExchangesJsonArray;
+
+		//write reverse arrays to json
+		nlohmann::json ReverseVJsonArray = nlohmann::json::array({});
+		nlohmann::json ReversePairsJsonArray = nlohmann::json::array({});
+		//nlohmann::json ReverseExchangesJsonArray = nlohmann::json::array({});
+
+		std::reverse(v.begin(), v.end());
+		std::reverse(paex.begin(), paex.end());
+		//std::reverse(exchanges.begin(), exchanges.end());
+		//ReverseVJsonArray = v;
+		for (auto vel : v)
+		{
+			ReverseVJsonArray.push_back(reversedlistofvertexes[vel]);
+		}
+		ReversePairsJsonArray = paex;
+		//ReverseExchangesJsonArray = exchanges;
+
+		nlohmann::json rj;
+		rj["path"] = ReverseVJsonArray;
+		rj["pairs"] = ReversePairsJsonArray;
+		//rj["exchanges"] = ReverseExchangesJsonArray;
+
+		NumberOfALLCycles += 2;
+
+		mtx.lock();
+		MainJsonList.push_back(j);
+		MainJsonList.push_back(rj);
+		mtx.unlock();
+
 	}
 	return;
 }

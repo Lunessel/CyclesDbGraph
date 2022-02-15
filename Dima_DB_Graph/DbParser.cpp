@@ -52,7 +52,6 @@ int FeeSelectData(const char* s, std::string name)
 	std::string sql = "";
 
 	sql += "SELECT name,fee FROM \"" + name + "\";"; //LIMIT 5000
-	std::cout << sql << "\n";
 
 	int exit = sqlite3_open(s, &DB);
 	/* An open database, SQL to be evaluated, Callback function, 1st argument to callback, Error msg written here*/
@@ -73,7 +72,7 @@ int FeeSelectData(const char* s, std::string name)
 /* argc: holds the number of results, argv: holds each value in array, azColName: holds each column returned in array, */
 int FeeCallback(void* NotUsed, int argc, char** argv, char** azColName)
 {
-	feeList[argv[0]] = argv[1];
+	feeList[argv[0]] = std::stoi(argv[1]);
 
 	return 0;
 }

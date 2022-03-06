@@ -17,86 +17,16 @@
 #include "Pair.h"
 #include "JsonWriter.h"
 
-void MakeOutputArray_for_L_2(std::vector<nlohmann::json>& MainJsonList, long int startindex, long int finishindex, std::string currentToken)
+
+void MakeJsonFile(void (* foo)(std::vector< std::vector<nlohmann::json> >& MainJsonList, long int startindex, long int finishindex, std::string currentToken),
+	std::vector< std::vector<nlohmann::json> >& MainJsonList, int number_of_json_files, long int cyclesize, std::string vertex)
 {
-	std::map<std::string, std::vector<Pair> > res;
-
-	for (auto& i : basegraph[currentToken])
-	{
-		res[i.m_token1].push_back(i);
-	}
-
-	std::map<std::string, std::vector<Pair> >::iterator it;
-	for (it = res.begin(); it != res.end(); it++)
-	{
-		long int len = it->second.size();
-
-		if (len > 1)
-		{
-			std::string b = it->first;
-			nlohmann::json VJsonArray = nlohmann::json::array({});
-			VJsonArray.push_back(currentToken);
-			VJsonArray.push_back(b);
-			VJsonArray.push_back(currentToken);
-
-
-			for (int i = 0; i < len - 1; i++)
-			{
-				for (int k = i + 1; k < len; k++)
-				{
-					std::vector< std::pair<std::string, int> > pairArr;
-					pairArr.push_back( { it->second[i].m_pair, feeList[it->second[i].m_fee] } );
-					pairArr.push_back({ it->second[k].m_pair, feeList[it->second[k].m_fee] });
-					
-					//write arrays to json
-					nlohmann::json PairsJsonArray = nlohmann::json::array({});
-					//nlohmann::json ExchangesJsonArray = nlohmann::json::array({});
-					
-					PairsJsonArray = pairArr;
-
-					//ExchangesJsonArray = exchanges;
-
-					nlohmann::json j;
-
-					j["path"] = VJsonArray;
-					j["pairs"] = PairsJsonArray;
-					//j["exchanges"] = ExchangesJsonArray;
-
-					//write reverse arrays to json
-					nlohmann::json ReversePairsJsonArray = nlohmann::json::array({});
-					//nlohmann::json ReverseExchangesJsonArray = nlohmann::json::array({});
-
-					std::reverse(pairArr.begin(), pairArr.end());
-					//std::reverse(exchanges.begin(), exchanges.end());
-					//ReverseVJsonArray = v;
-	
-					ReversePairsJsonArray = pairArr;
-					//ReverseExchangesJsonArray = exchanges;
-
-					nlohmann::json rj;
-					rj["path"] = VJsonArray;
-					rj["pairs"] = ReversePairsJsonArray;
-					//rj["exchanges"] = ReverseExchangesJsonArray;
-
-					NumberOfALLCycles += 2;
-
-					mtx.lock();
-					MainJsonList.push_back(j);
-					MainJsonList.push_back(rj);
-					mtx.unlock();
-				}
-			}
-		}
-	}
-}
-
-void WritingtoJsonFile_for_L_2(long int cyclesize, std::string vertex)
-{
+	if (number_of_json_files < 1)
+		return;
 	//nlohmann::json MainJsonList = nlohmann::json::array({});
-	std::vector<nlohmann::json> MainJsonList;
-	nlohmann::json json;
-
-	const int numberofthreads = 4;
+	//std::vector< std::vector<nlohmann::json> > MainJsonList(number_of_json_files);
+	
+	//const int numberofthreads = 4;
 	long int threadstartindex = 0;
 	long int threadfinishindex = 0;
 	std::vector<std::thread> threads;
@@ -113,60 +43,38 @@ void WritingtoJsonFile_for_L_2(long int cyclesize, std::string vertex)
 		{
 			threadfinishindex = cyclesize;
 		}
-		threads.push_back(std::thread(&MakeOutputArray_for_L_2, std::ref(MainJsonList), threadstartindex, threadfinishindex, vertex));
+		threads.push_back(std::thread(foo, std::ref(MainJsonList), threadstartindex, threadfinishindex, vertex));
 		//myThreads[i] = std::thread(&MakeOutputArray, std::ref(MainJsonList), threadstartindex, threadfinishindex);
 	}
 	for (auto& th : threads) {
 		th.join();
 	}
-
-	//add array to json and write it to jsonfile
-	json["array"] = MainJsonList;
-	std::ofstream testfilejson("initialinput&output\\" + vertex + ".json");
-	testfilejson << std::setw(4) << json << std::endl;
-	testfilejson.close();
 }
 
-void WritingtoJsonFile(long int cyclesize, std::string vertex)
+void WriteJsonFile(std::vector< std::vector<nlohmann::json> >& MainJsonList)
 {
-	//nlohmann::json MainJsonList = nlohmann::json::array({});
-	std::vector<nlohmann::json> MainJsonList;
-	nlohmann::json json;
-	
-	const int numberofthreads = 4;
-	long int threadstartindex = 0;
-	long int threadfinishindex = 0;
-	std::vector<std::thread> threads;
-	long int threadstep = cyclesize / numberofthreads;
-
-	for (int i = 0; i < numberofthreads; ++i)
-	{
-		threadstartindex = threadfinishindex;
-		if (i != (numberofthreads - 1))
-		{
-			threadfinishindex += threadstep;
-		}
-		else
-		{
-			threadfinishindex = cyclesize;
-		}
-		threads.push_back(std::thread(&MakeOutputArray, std::ref(MainJsonList), threadstartindex, threadfinishindex, vertex));
-		//myThreads[i] = std::thread(&MakeOutputArray, std::ref(MainJsonList), threadstartindex, threadfinishindex);
-	}
-	for (auto& th : threads) {
-		th.join();
-	}
-
+	jsoncounter = 0;
 	//add array to json and write it to jsonfile
-	json["array"] = MainJsonList;
-	std::ofstream testfilejson("initialinput&output\\" + vertex + ".json");
-	testfilejson << std::setw(4) << json << std::endl;
-	testfilejson.close();
+	for (auto& i : MainJsonList)
+	{
+		nlohmann::json json;
+		json["array"] = i;
+		std::ofstream testfilejson("initialinput&output\\" + std::to_string(jsoncounter) + "_file" + ".json");
+		testfilejson << std::setw(4) << json << std::endl;
+		testfilejson.close();
+		++jsoncounter;
+	}
+	jsoncounter = 0;
 }
-
 
 int main()
 {
+	std::cout << "How many .json files do you want: ";
+	std::cin >> number_of_json_files;
+	std::cout << "Hoq many threads do you want: ";
+	std::cin >> numberofthreads;
+	std::vector< std::vector<nlohmann::json> > MainJsonList(number_of_json_files);
+
 	dir = ReplaceAll("initialinput&output\\DB_Name.txt", "\\", "\\\\");
 	NumberOfALLCycles = 0;
 	time_t timer1, timer2;
@@ -251,8 +159,9 @@ int main()
 	//WritingtoJsonFile(cyclesize, "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"); //"0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c" 
 
 
-	WritingtoJsonFile_for_L_2(cyclesize, "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"); //"0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c" 
-
+	MakeJsonFile(MakeOutputArray_for_L_2, MainJsonList, number_of_json_files, cyclesize, "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"); //"0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c" 
+	//MakeJsonFile(MakeOutputArray, MainJsonList, number_of_json_files, cyclesize, "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"); //"0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c" 
+	WriteJsonFile(MainJsonList);
 
 	std::cout << "number of ALL cycles is: " << NumberOfALLCycles << "\n";
 

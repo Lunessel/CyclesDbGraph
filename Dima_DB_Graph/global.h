@@ -19,4 +19,7 @@ extern std::vector<std::vector<long int>> cycles;
 extern const std::string MainToken;
 extern std::mutex mtx;
 extern std::map<std::string, int> feeList;
+extern int jsoncounter;
+extern int number_of_json_files;
+extern int numberofthreads;
 #endif

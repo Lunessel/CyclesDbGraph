@@ -10,3 +10,6 @@ std::vector<std::vector<long int>> cycles;
 const std::string MainToken = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
 std::mutex mtx;
 std::map<std::string, int> feeList;
+int jsoncounter = 0;
+int number_of_json_files;
+int numberofthreads;

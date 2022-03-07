@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include <sqlite3.h>
 #include "global.h"
 #include "Pair.h"
@@ -29,6 +30,8 @@ int selectData(const char* s, std::vector<std::string> names)
 		else
 			std::cout << "Records selected Successfully!" << std::endl;
 	}
+
+	sqlite3_close(DB);
 	return 0;
 }
 
@@ -63,8 +66,8 @@ int FeeSelectData(const char* s, std::string name)
 	}
 	else
 		std::cout << "FEE Records selected Successfully!" << std::endl;
-
-	//sqlite3_close(DB);
+	
+	sqlite3_close(DB);
 	return 0;
 }
 
@@ -76,3 +79,30 @@ int FeeCallback(void* NotUsed, int argc, char** argv, char** azColName)
 
 	return 0;
 }
+
+int InsertIntoCycles(std::string& tokenPath, std::string& pairPath, std::string& exchanges, std::string& fees)
+{
+	sqlite3* DB;
+	char* zErrMsg = 0;
+
+
+
+	int exit = sqlite3_open("cycles.db", &DB);
+
+	if (exit)
+	{
+		std::cout << "Can't open database: %s\n";
+	}
+
+	std::string sql = "INSERT INTO \"cycles_v0.1\" (tokenPath, pairPath, exchanges, fees) "  \
+		"VALUES ('"+ tokenPath + "', '" + pairPath + "', '" + exchanges + "', '" + fees + "' ); ";
+	exit = sqlite3_exec(DB, sql.c_str(), 0, 0, &zErrMsg);
+	if (exit != SQLITE_OK) {
+		fprintf(stderr, "SQL error: %s\n", zErrMsg);
+		sqlite3_free(zErrMsg);
+	}
+	sqlite3_close(DB);
+
+	return 0;
+}
+/*+ std::to_string(sqlite3_last_insert_rowid(DB)) + ", '"*/

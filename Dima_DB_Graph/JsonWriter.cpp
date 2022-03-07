@@ -1,8 +1,10 @@
+#include <string>
 #include "global.h"
 #include "JsonWriter.h"
 #include "AdditionalFunctions.h"
+#include "DbParser.h"
 
-void MakeOutputArray(std::vector< std::vector<nlohmann::json> >& MainJsonList, long int startindex, long int finishindex, std::string currentToken)
+void MakeOutputArray(long int startindex, long int finishindex, std::string currentToken)
 {
 	std::string strsearchedtoken = currentToken;
 	long int searchedtoken = listofvertexes[strsearchedtoken];
@@ -27,7 +29,6 @@ void MakeOutputArray(std::vector< std::vector<nlohmann::json> >& MainJsonList, l
 			continue;
 		}
 
-
 		std::vector<long int> v;
 
 		for (long int i = 0; i < length; ++i)
@@ -44,13 +45,10 @@ void MakeOutputArray(std::vector< std::vector<nlohmann::json> >& MainJsonList, l
 
 		//find pairs for current cycle
 
-		std::vector< std::vector< std::pair<std::string, int> >> paex;
-		//std::vector< std::vector<std::string>> exchanges;
-		//std::pair< std::vector< std::vector<std::string>>, std::vector< std::vector<std::string>> > paex;
+		std::vector< std::vector< std::pair<std::string, std::string> >> paex;
+
 		paex.resize(length);
-		//exchanges.resize(length);
-		/*pairs.resize(length);
-		exchanges.resize(length);*/
+
 		long int countpairs = 0;
 
 		for (long int i = 0; i < length; i++)
@@ -69,69 +67,74 @@ void MakeOutputArray(std::vector< std::vector<nlohmann::json> >& MainJsonList, l
 			{
 				if (p.m_token1 == strfirst)
 				{
-					paex[countpairs].push_back( { p.m_pair, feeList[p.m_fee] } );
+					paex[countpairs].push_back( { p.m_pair, p.m_fee } );
 				}
 			}
 			++countpairs;
 
 		}
 
-	//std::vector< std::vector< std::pair<std::string, std::string> > > preparedpairs = AllPossibleComb(pairs);
-	//write arrays to json
-		nlohmann::json VJsonArray = nlohmann::json::array({});
-		nlohmann::json PairsJsonArray = nlohmann::json::array({});
-		//nlohmann::json ExchangesJsonArray = nlohmann::json::array({});
-		for (auto vel : v)
+		std::string reversedtokenPath = "", tokenPath = "", pairPath = "", exchanges = "", fees = "";
+
+		tokenPath += reversedlistofvertexes[v[0]];
+		for (int i = 1; i < v.size(); ++i)
 		{
-			VJsonArray.push_back(reversedlistofvertexes[vel]);
+			tokenPath += ", " + reversedlistofvertexes[v[i]];
 		}
-		PairsJsonArray = paex;
-		//ExchangesJsonArray = exchanges;
-
-		nlohmann::json j;
-
-		j["path"] = VJsonArray;
-		j["pairs"] = PairsJsonArray;
-		//j["exchanges"] = ExchangesJsonArray;
-
-		//write reverse arrays to json
-		nlohmann::json ReverseVJsonArray = nlohmann::json::array({});
-		nlohmann::json ReversePairsJsonArray = nlohmann::json::array({});
-		//nlohmann::json ReverseExchangesJsonArray = nlohmann::json::array({});
 
 		std::reverse(v.begin(), v.end());
-		std::reverse(paex.begin(), paex.end());
-		//std::reverse(exchanges.begin(), exchanges.end());
-		//ReverseVJsonArray = v;
-		for (auto vel : v)
+
+		reversedtokenPath += reversedlistofvertexes[v[0]];
+		for (int i = 1; i < v.size(); ++i)
 		{
-			ReverseVJsonArray.push_back(reversedlistofvertexes[vel]);
+			reversedtokenPath += ", " + reversedlistofvertexes[v[i]];
 		}
-		ReversePairsJsonArray = paex;
-		//ReverseExchangesJsonArray = exchanges;
 
-		nlohmann::json rj;
-		rj["path"] = ReverseVJsonArray;
-		rj["pairs"] = ReversePairsJsonArray;
-		//rj["exchanges"] = ReverseExchangesJsonArray;
+		auto cycledata = AllPossibleComb(paex);
+		for (auto data : cycledata)
+		{
+			pairPath = "", exchanges = "", fees = "";
 
-		
+			pairPath += data[0].first;
+			exchanges += data[0].second;
+			fees += std::to_string(feeList[data[0].second]);
+			for (int i = 1; i < data.size(); ++i)
+			{
+				pairPath += ", " + data[i].first;
+				exchanges += ", " + data[i].second;
+				fees += ", " + std::to_string(feeList[data[i].second]);
 
-		mtx.lock();
-		MainJsonList[jsoncounter].push_back(j);
-		MainJsonList[jsoncounter].push_back(rj);
-		NumberOfALLCycles += 2;
-		jsoncounter = (jsoncounter + 1) % number_of_json_files;
-		mtx.unlock();
+			}
+			mtx.lock();
+			NumberOfALLCycles += 1;
+			InsertIntoCycles(tokenPath, pairPath, exchanges, fees);
+			mtx.unlock();
 
+
+			std::reverse(data.begin(), data.end());
+			pairPath = "", exchanges = "", fees = "";
+
+			pairPath += data[0].first;
+			exchanges += data[0].second;
+			fees += std::to_string(feeList[data[0].second]);
+			for (int i = 1; i < data.size(); ++i)
+			{
+				pairPath += ", " + data[i].first;
+				exchanges += ", " + data[i].second;
+				fees += ", " + std::to_string(feeList[data[i].second]);
+
+
+			}
+			mtx.lock();
+			NumberOfALLCycles += 1;
+			InsertIntoCycles(reversedtokenPath, pairPath, exchanges, fees);
+			mtx.unlock();
+		}
 	}
 	return;
 }
 
-
-
-
-void MakeOutputArray_for_L_2(std::vector< std::vector<nlohmann::json> >& MainJsonList, long int startindex, long int finishindex, std::string currentToken)
+void MakeOutputArray_for_L_2(long int startindex, long int finishindex, std::string currentToken)
 {
 	std::map<std::string, std::vector<Pair> > res;
 
@@ -147,56 +150,45 @@ void MakeOutputArray_for_L_2(std::vector< std::vector<nlohmann::json> >& MainJso
 
 		if (len > 1)
 		{
-			std::string b = it->first;
-			nlohmann::json VJsonArray = nlohmann::json::array({});
-			VJsonArray.push_back(currentToken);
-			VJsonArray.push_back(b);
-			VJsonArray.push_back(currentToken);
+			
 
-			std::vector< std::pair<std::string, int> > temparr;
+			//std::string b = it->first;
+			std::vector< std::pair<std::string, std::string> > temparr;
 
 			for (int i = 0; i < len; i++)
 			{
-				//std::vector< std::vector< std::pair<std::string, int> >> pairArr;
-				//std::map<std::string, std::vector< std::pair<std::string, int> > > pairArr;
-
-
-				temparr.push_back({ it->second[i].m_pair, feeList[it->second[i].m_fee] });
+				temparr.push_back({ it->second[i].m_pair, it->second[i].m_fee });
 			}
-				//write arrays to json
-				nlohmann::json PairsJsonArray = nlohmann::json::array({});
-				PairsJsonArray.push_back(temparr);
-				PairsJsonArray.push_back(temparr);
 
-				nlohmann::json j;
+			std::vector< std::vector< std::pair<std::string, std::string> >> paex;
 
-				j["path"] = VJsonArray;
-				j["pairs"] = PairsJsonArray;
+			paex.push_back(temparr);
+			paex.push_back(temparr);
 
-				////write reverse arrays to json
-				//nlohmann::json ReversePairsJsonArray = nlohmann::json::array({});
+			std::string tokenPath = "", pairPath = "", exchanges = "", fees = "";
 
-				//std::reverse(temparr.begin(), temparr.end());
-				////std::reverse(exchanges.begin(), exchanges.end());
-				////ReverseVJsonArray = v;
+			tokenPath = currentToken + ", " + it->first + ", " + currentToken;
 
-				//ReversePairsJsonArray = temparr;
+			auto cycledata = AllPossibleComb(paex);
+			for (auto data : cycledata)
+			{
+				pairPath = "", exchanges = "", fees = "";
 
+				pairPath += data[0].first;
+				exchanges += data[0].second;
+				fees += std::to_string(feeList[data[0].second]);
+				for (int i = 1; i < data.size(); ++i)
+				{
+					pairPath += ", " + data[i].first;
+					exchanges += ", " + data[i].second;
+					fees += ", " + std::to_string(feeList[data[i].second]);
 
-				//nlohmann::json rj;
-				//rj["path"] = VJsonArray;
-				//rj["pairs"] = ReversePairsJsonArray;
-
-				//NumberOfALLCycles += 2;
+				}
 				mtx.lock();
-
-				MainJsonList[jsoncounter].push_back(j);
-				//MainJsonList[jsoncounter].push_back(rj);
 				NumberOfALLCycles += 1;
-				jsoncounter = (jsoncounter + 1) % number_of_json_files;
+				InsertIntoCycles(tokenPath, pairPath, exchanges, fees);
 				mtx.unlock();
-				
-			
+			}
 		}
 	}
 }

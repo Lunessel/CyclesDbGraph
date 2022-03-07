@@ -8,7 +8,6 @@
 #include <fstream>
 #include <string>
 #include <algorithm>
-#include <nlohmann/json.hpp>
 #include <mutex>
 #include "global.h"
 #include "AdditionalFunctions.h"
@@ -18,11 +17,9 @@
 #include "JsonWriter.h"
 
 
-void MakeJsonFile(void (* foo)(std::vector< std::vector<nlohmann::json> >& MainJsonList, long int startindex, long int finishindex, std::string currentToken),
-	std::vector< std::vector<nlohmann::json> >& MainJsonList, int number_of_json_files, long int cyclesize, std::string vertex)
+void MakeJsonFile(void (* foo)(long int startindex, long int finishindex, std::string currentToken),
+	long int cyclesize, std::string vertex)
 {
-	if (number_of_json_files < 1)
-		return;
 	//nlohmann::json MainJsonList = nlohmann::json::array({});
 	//std::vector< std::vector<nlohmann::json> > MainJsonList(number_of_json_files);
 	
@@ -43,7 +40,7 @@ void MakeJsonFile(void (* foo)(std::vector< std::vector<nlohmann::json> >& MainJ
 		{
 			threadfinishindex = cyclesize;
 		}
-		threads.push_back(std::thread(foo, std::ref(MainJsonList), threadstartindex, threadfinishindex, vertex));
+		threads.push_back(std::thread(foo, threadstartindex, threadfinishindex, vertex));
 		//myThreads[i] = std::thread(&MakeOutputArray, std::ref(MainJsonList), threadstartindex, threadfinishindex);
 	}
 	for (auto& th : threads) {
@@ -51,29 +48,11 @@ void MakeJsonFile(void (* foo)(std::vector< std::vector<nlohmann::json> >& MainJ
 	}
 }
 
-void WriteJsonFile(std::vector< std::vector<nlohmann::json> >& MainJsonList)
-{
-	jsoncounter = 0;
-	//add array to json and write it to jsonfile
-	for (auto& i : MainJsonList)
-	{
-		nlohmann::json json;
-		json["array"] = i;
-		std::ofstream testfilejson("initialinput&output\\" + std::to_string(jsoncounter) + "_file" + ".json");
-		testfilejson << std::setw(4) << json << std::endl;
-		testfilejson.close();
-		++jsoncounter;
-	}
-	jsoncounter = 0;
-}
 
-int main()
+int Logic()
 {
-	std::cout << "How many .json files do you want: ";
-	std::cin >> number_of_json_files;
-	std::cout << "Hoq many threads do you want: ";
+	std::cout << "How many threads do you want: ";
 	std::cin >> numberofthreads;
-	std::vector< std::vector<nlohmann::json> > MainJsonList(number_of_json_files);
 
 	dir = ReplaceAll("initialinput&output\\DB_Name.txt", "\\", "\\\\");
 	NumberOfALLCycles = 0;
@@ -156,12 +135,10 @@ int main()
 	long int cyclesize = cycles.size();
 	std::cout << cyclesize << " was found\n";
 
-	//WritingtoJsonFile(cyclesize, "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"); //"0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c" 
 
 
-	MakeJsonFile(MakeOutputArray_for_L_2, MainJsonList, number_of_json_files, cyclesize, "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"); //"0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c" 
-	//MakeJsonFile(MakeOutputArray, MainJsonList, number_of_json_files, cyclesize, "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"); //"0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c" 
-	WriteJsonFile(MainJsonList);
+	MakeJsonFile(MakeOutputArray_for_L_2, cyclesize, "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"); //"0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c" 
+	MakeJsonFile(MakeOutputArray,  cyclesize, "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"); //"0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c" 
 
 	std::cout << "number of ALL cycles is: " << NumberOfALLCycles << "\n";
 
@@ -174,3 +151,20 @@ int main()
 	return 0;
 
 }
+
+int main()
+{
+	//std::vector< std::vector< std::pair<std::string, std::string> > > pairs;
+	//std::vector< std::pair<std::string, std::string> > v1, v2;
+	//v1.push_back({ "ab1", "p" });
+	//v1.push_back({ "ab2", "p" });
+	//v2.push_back({ "bc1", "k" });
+	//v2.push_back({ "bc2", "k" });
+	//pairs.push_back(v1);
+	//pairs.push_back(v2);
+	//auto res = AllPossibleComb(pairs);
+
+	Logic();
+	return 0;
+}
+
